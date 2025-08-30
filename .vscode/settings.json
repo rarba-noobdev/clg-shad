@@ -1,0 +1,158 @@
+{
+	// ===== CORE EDITOR SETTINGS =====
+	"editor.fontFamily": "'Fira Code', 'JetBrains Mono', monospace",
+	"editor.fontSize": 14,
+	"editor.fontLigatures": true,
+	"editor.lineHeight": 1.6,
+	"editor.tabSize": 2,
+	"editor.insertSpaces": true,
+	"editor.detectIndentation": false,
+	"editor.wordWrap": "on",
+	"editor.formatOnSave": true,
+	"editor.formatOnPaste": true,
+	"editor.formatOnType": true,
+	"editor.bracketPairColorization.enabled": true,
+	"editor.guides.bracketPairs": "active",
+	"editor.semanticHighlighting.enabled": true,
+	"editor.linkedEditing": true,
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+
+	// ===== SMOOTH CURSOR & NAVIGATION =====
+	"editor.cursorSmoothCaretAnimation": "on",
+	"editor.cursorBlinking": "phase",
+	"editor.cursorStyle": "line-thin",
+	"editor.cursorWidth": 1,
+	"editor.smoothScrolling": true,
+	"editor.mouseWheelZoom": true,
+	"editor.renderWhitespace": "selection",
+	"editor.renderControlCharacters": false,
+	"editor.fastScrollSensitivity": 3,
+
+	// ===== TYPESCRIPT COMPLETION =====
+	"typescript.suggest.autoImports": true,
+	"typescript.suggest.completeFunctionCalls": true,
+	"typescript.suggest.includeCompletionsForModuleExports": true,
+	"typescript.updateImportsOnFileMove.enabled": "always",
+	"typescript.preferences.importModuleSpecifier": "relative",
+	"typescript.preferences.includePackageJsonAutoImports": "on",
+	"javascript.suggest.autoImports": true,
+	"javascript.updateImportsOnFileMove.enabled": "always",
+	"javascript.suggest.completeFunctionCalls": true,
+
+	// ===== INLAY HINTS =====
+	"editor.inlayHints.enabled": "onUnlessPressed",
+	"typescript.inlayHints.enumMemberValues.enabled": true,
+	"typescript.inlayHints.functionLikeReturnTypes.enabled": true,
+	"typescript.inlayHints.parameterNames.enabled": "literals",
+	"typescript.inlayHints.parameterTypes.enabled": true,
+	"typescript.inlayHints.propertyDeclarationTypes.enabled": true,
+	"typescript.inlayHints.variableTypes.enabled": true,
+
+	// ===== QUICK SUGGESTIONS =====
+	"editor.quickSuggestions": {
+		"other": true,
+		"comments": false,
+		"strings": true
+	},
+	"editor.quickSuggestionsDelay": 100,
+	"editor.suggestSelection": "recentlyUsed",
+	"editor.suggest.showKeywords": true,
+	"editor.suggest.showStatusBar": true,
+	"editor.wordBasedSuggestions": "allDocuments",
+	"editor.acceptSuggestionOnCommitCharacter": true,
+	"editor.acceptSuggestionOnEnter": "on",
+	"editor.suggest.insertMode": "replace",
+	"editor.suggest.localityBonus": true,
+	"editor.suggest.shareSuggestSelections": true,
+	"editor.tabCompletion": "on",
+	"editor.hover.delay": 300,
+	"editor.hover.sticky": true,
+
+	// ===== SVELTE 5 SPECIFIC =====
+	"svelte.enable-ts-plugin": true,
+	"svelte.plugin.typescript.diagnostics.enable": true,
+	"svelte.plugin.typescript.enable": true,
+	"svelte.plugin.svelte.defaultScriptLanguage": "ts",
+	"svelte.plugin.svelte.format.enable": true,
+	"svelte.plugin.svelte.completions.enable": true,
+	"[svelte]": {
+		"editor.defaultFormatter": "svelte.svelte-vscode",
+		"editor.quickSuggestions": {
+			"other": true,
+			"comments": false,
+			"strings": true
+		}
+	},
+	"[src/routes/auth/*.svelte]": {
+		"editor.formatOnSave": false,
+		"editor.defaultFormatter": null
+	},
+
+	// ===== FILE HANDLING =====
+	"files.autoSave": "onFocusChange",
+	"files.trimTrailingWhitespace": true,
+	"files.insertFinalNewline": true,
+	"files.associations": {
+		"*.svelte": "svelte"
+	},
+	"files.exclude": {
+		"**/.git": true,
+		"**/.DS_Store": true,
+		"**/node_modules": true
+	},
+
+	// ===== WORKSPACE APPEARANCE =====
+	"workbench.colorTheme": "Default Dark Modern",
+	"workbench.editor.enablePreview": false,
+	"workbench.editor.limit.enabled": true,
+	"workbench.editor.limit.value": 15,
+	"workbench.startupEditor": "none",
+	"workbench.list.smoothScrolling": true,
+	"workbench.tree.indent": 16,
+	"explorer.compactFolders": false,
+
+	// ===== FORMATTING =====
+	"prettier.requireConfig": true,
+	"prettier.useEditorConfig": true,
+	"prettier.printWidth": 100,
+	"prettier.singleQuote": true,
+	"prettier.trailingComma": "es5",
+
+	// ===== SEARCH =====
+	"search.exclude": {
+		"**/node_modules": true,
+		"**/.svelte-kit": true,
+		"**/dist": true
+	},
+	"search.useGlobalIgnoreFiles": true,
+	"search.smartCase": true,
+
+	// ===== EXTENSIONS =====
+	"eslint.validate": ["javascript", "typescript", "svelte"],
+	"tailwindCSS.includeLanguages": {
+		"svelte": "html"
+	},
+	"tailwindCSS.emmetCompletions": true,
+
+	// ===== PERFORMANCE =====
+	"editor.largeFileOptimizations": false,
+	"typescript.tsserver.experimental.enableProjectDiagnostics": true,
+	"typescript.tsserver.log": "off",
+	"files.watcherExclude": {
+		"**/node_modules/**": true,
+		"**/.svelte-kit/**": true,
+		"**/dist/**": true
+	},
+	"chat.mcp.serverSampling": {
+		"Clg_proj_Shadcn/.vscode/mcp.json: context7": {
+			"allowedModels": [
+				"copilot/gpt-4.1",
+				"copilot/claude-3.5-sonnet",
+				"copilot/gemini-2.0-flash-001",
+				"copilot/gpt-4o",
+				"copilot/gpt-5-mini",
+				"copilot/o3-mini"
+			]
+		}
+	}
+}
