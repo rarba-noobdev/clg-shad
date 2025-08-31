@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { fail, redirect } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import sanitizeHtml from 'sanitize-html';
+import type { Provider } from '@supabase/supabase-js';
 
 // =========================
 // Schemas
@@ -56,13 +57,42 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 };
 
 export const actions: Actions = {
-	login: async ({ request, locals: { supabase } }) => {
-		const form = await superValidate(request, zod(loginSchema));
+	oauth: async ({ url, locals: { supabase } }) => {
+		const provider = url.searchParams.get('provider') as Provider;
 
+		if (!provider) {
+			return fail(400, { error: 'Provider is required' });
+		}
+
+		try {
+			const { data, error } = await supabase.auth.signInWithOAuth({
+				provider,
+				options: {
+					redirectTo: `${url.origin}/auth/callback`
+				}
+			});
+
+			if (error) {
+				console.error('OAuth error:', error);
+				return fail(400, { error: error.message });
+			}
+
+			if (data.url) {
+				throw redirect(302, data.url);
+			}
+		} catch (err: any) {
+			if (err?.status === 302) {
+				throw err; // Re-throw redirect
+			}
+			console.error('OAuth error:', err);
+			return fail(500, { error: 'OAuth initialization failed' });
+		}
+	},
+	login: async ({ request, url, locals: { supabase } }) => {
+		const form = await superValidate(request, zod(loginSchema));
 		if (!form.valid) {
 			return fail(400, { form });
 		}
-
 		try {
 			const { data, error } = await supabase.auth.signInWithPassword({
 				email: form.data.email,
