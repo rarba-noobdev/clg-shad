@@ -14,7 +14,6 @@
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import MoonIcon from '@lucide/svelte/icons/moon';
 	import { toggleMode } from 'mode-watcher';
-	import { goto } from '$app/navigation';
 
 	// Navigation items
 	const navItems = [
@@ -157,12 +156,7 @@
 			</Dialog>
 
 			<!-- Login button for desktop -->
-			<Button
-				onclick={() => goto('/auth?type=register')}
-				variant="default"
-				size="sm"
-				class="hidden md:inline-flex"
-			>
+			<Button href="/auth" variant="default" size="sm" class="hidden md:inline-flex">
 				Get Started
 			</Button>
 

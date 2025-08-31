@@ -26,9 +26,7 @@ const registerSchema = z
 			.regex(/[0-9]/, { message: 'Password must contain at least one number' })
 			.regex(/[^A-Za-z0-9]/, { message: 'Password must contain at least one special character' })
 			.refine((val) => !val.includes(' '), { message: 'Password cannot contain spaces' }),
-		confirmPassword: z
-			.string({ message: 'Password confirmation is required' })
-			.min(8, { message: 'Password confirmation must be at least 8 characters long' })
+		confirmPassword: z.string({ message: 'Password confirmation is required' })
 	})
 	.refine((data) => data.password === data.confirmPassword, {
 		message: 'Passwords do not match',

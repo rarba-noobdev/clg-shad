@@ -2,6 +2,7 @@
 	import '../app.css';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import { ModeWatcher } from 'mode-watcher';
+	import { Toaster } from 'svelte-french-toast';
 	import { afterNavigate, beforeNavigate, invalidate } from '$app/navigation';
 	import { setUserState } from '$lib/user_state/user_state.svelte';
 	import '@bprogress/core/css';
@@ -41,3 +42,4 @@
 <ModeWatcher />
 <Navbar />
 {@render children?.()}
+<Toaster position={'top-right'} />
