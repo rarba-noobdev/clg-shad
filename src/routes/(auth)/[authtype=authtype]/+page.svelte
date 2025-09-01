@@ -6,12 +6,12 @@
 	import SuperDebug, { superForm } from 'sveltekit-superforms';
 	import type { PageData } from './$types';
 	import { toast } from 'svelte-sonner';
-	// import toast from 'svelte-french-toast';
+	import { goto, invalidateAll } from '$app/navigation';
 
 	let { data }: { data: PageData } = $props();
 	let authType = $state('login');
+
 	function showErrors(errors: Record<string, string[] | undefined>) {
-		console.log('Error messages:');
 		for (const key of Object.keys(errors)) {
 			const messages = errors[key];
 			if (messages) {
@@ -22,41 +22,92 @@
 		}
 	}
 
-	let { form: loginForm, enhance: loginEnhance } = $derived(
-		superForm(data.loginForm, {
-			onUpdate({ form }) {
-				if (form.message) {
-					toast.success(form.message);
-				}
-				if (form.errors) {
-					showErrors(form.errors);
-				}
-			},
-			onSubmit: () => {
-				toast;
-			}
-		})
-	);
+	let loginLoadingToastId: string | number | undefined;
+	let {
+		form: loginForm,
+		enhance: loginEnhance,
+		submitting: loginSubmitting
+	} = superForm(data.loginForm, {
+		// Force full page reload
+		invalidateAll: 'force',
+		applyAction: true,
 
+		onSubmit({ cancel }) {
+			loginLoadingToastId = toast.loading('Logging In...');
+		},
+
+		onResult: async ({ result }) => {
+			if (result.type === 'failure') {
+				toast.error('Login validation failed', { id: loginLoadingToastId });
+			} else if (result.type === 'success') {
+				toast.success('Login successful', { id: loginLoadingToastId });
+				// Force full page reload
+				await invalidateAll();
+				// Or use window.location.reload() for a hard refresh
+				window.location.reload();
+			} else if (result.type === 'redirect') {
+				// Let SvelteKit handle the redirect, which will do a full navigation
+				toast.success('Login successful', { id: loginLoadingToastId });
+			}
+		},
+
+		onUpdated({ form }) {
+			if (form.message) {
+				toast.success(form.message);
+			}
+			if (form.errors) {
+				showErrors(form.errors);
+			}
+		},
+
+		onError({ result }) {
+			toast.error('Login failed. Please try again.', { id: loginLoadingToastId });
+		}
+	});
+
+	let registerLoadingToastId: string | number | undefined;
 	let {
 		form: registerForm,
-		errors: registerErrors,
-		enhance: registerEnhance
-	} = $derived(
-		superForm(data.registerForm, {
-			onUpdate({ form }) {
-				if (form.message) {
-					toast.success(form.message);
-				}
-				if (form.errors) {
-					showErrors(form.errors);
-				}
-			},
-			onSubmit: () => {
-				toast;
+		enhance: registerEnhance,
+		submitting: registerSubmitting
+	} = superForm(data.registerForm, {
+		// Force full page reload
+		invalidateAll: 'force',
+		applyAction: true,
+		resetForm: false,
+
+		onSubmit({ cancel }) {
+			registerLoadingToastId = toast.loading('Registering...');
+		},
+
+		onResult: async ({ result }) => {
+			if (result.type === 'failure') {
+				toast.error('Registration validation failed', { id: registerLoadingToastId });
+			} else if (result.type === 'success') {
+				toast.success('Registration successful', { id: registerLoadingToastId });
+				// Switch to login after successful registration
+				authType = 'login';
+				window.location.reload();
+				await invalidateAll();
+			} else if (result.type === 'redirect') {
+				// Let SvelteKit handle the redirect
+				toast.success('Registration successful', { id: registerLoadingToastId });
 			}
-		})
-	);
+		},
+
+		onUpdated({ form }) {
+			if (form.message) {
+				toast.success(form.message);
+			}
+			if (form.errors) {
+				showErrors(form.errors);
+			}
+		},
+
+		onError({ result }) {
+			toast.error('Registration failed. Please try again.', { id: registerLoadingToastId });
+		}
+	});
 </script>
 
 <div class="flex h-screen w-full items-center justify-center px-4">

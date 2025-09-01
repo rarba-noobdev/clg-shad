@@ -4,7 +4,7 @@
 	import { ModeWatcher } from 'mode-watcher';
 	import { afterNavigate, beforeNavigate, invalidate } from '$app/navigation';
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
-	import { setUserState } from '$lib/user_state/user_state.svelte';
+	import { getUserState, setUserState } from '$lib/user_state/user_state.svelte';
 	import '@bprogress/core/css';
 	import { BProgress } from '@bprogress/core';
 	import { page } from '$app/state';
@@ -13,7 +13,6 @@
 	let { data, children } = $props();
 	let { session, supabase } = $derived(data);
 	let oauthCheck = $derived(page.url.searchParams.get('oauth'));
-
 	const userState = setUserState({
 		session: data.session,
 		supabase: data.supabase,
@@ -23,10 +22,6 @@
 	$effect(() => {
 		const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
 			console.log('Auth state changed');
-			if (oauthCheck) {
-				page.url.searchParams.delete('oauth');
-				toast.success('Logged In Sucessfully');
-			}
 			userState.updateState({
 				session: newSession,
 				supabase: supabase,
@@ -34,6 +29,10 @@
 			});
 			if (newSession?.expires_at !== session?.expires_at) {
 				invalidate('supabase:auth');
+			}
+			if (oauthCheck) {
+				page.url.searchParams.delete('oauth');
+				toast.success('Logged In Sucessfully');
 			}
 		});
 		return () => data.subscription.unsubscribe();
@@ -49,4 +48,5 @@
 <ModeWatcher />
 <Navbar />
 <Toaster richColors expand={true} closeButton position="top-right" />
+
 {@render children?.()}
