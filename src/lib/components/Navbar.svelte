@@ -82,7 +82,7 @@
 							{/each}
 						</nav>
 						<div class="border-t pt-6">
-							<Button href="/login" class="w-full" size="sm">Get Started</Button>
+							<Button href="/auth" class="w-full" size="sm">Get Started</Button>
 						</div>
 					</div>
 				</SheetContent>
