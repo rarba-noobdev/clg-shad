@@ -6,7 +6,7 @@
 	import SuperDebug, { superForm } from 'sveltekit-superforms';
 	import type { PageData } from './$types';
 	import { toast } from 'svelte-sonner';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { invalidateAll } from '$app/navigation';
 
 	let { data }: { data: PageData } = $props();
 	let authType = $state('login');
@@ -31,14 +31,20 @@
 		// Force full page reload
 		invalidateAll: 'force',
 		applyAction: true,
-
 		onSubmit({ cancel }) {
 			loginLoadingToastId = toast.loading('Logging In...');
 		},
-
 		onResult: async ({ result }) => {
 			if (result.type === 'failure') {
-				toast.error('Login validation failed', { id: loginLoadingToastId });
+				// Dismiss loading toast first
+				toast.dismiss(loginLoadingToastId);
+				// Only show specific field errors, not a general message
+				if (result.data?.form?.errors) {
+					showErrors(result.data.form.errors);
+				} else {
+					// Fallback if no specific errors
+					toast.error('Login validation failed');
+				}
 			} else if (result.type === 'success') {
 				toast.success('Login successful', { id: loginLoadingToastId });
 				// Force full page reload
@@ -50,16 +56,12 @@
 				toast.success('Login successful', { id: loginLoadingToastId });
 			}
 		},
-
 		onUpdated({ form }) {
 			if (form.message) {
 				toast.success(form.message);
 			}
-			if (form.errors) {
-				showErrors(form.errors);
-			}
+			// Removed error handling from here to prevent duplicates
 		},
-
 		onError({ result }) {
 			toast.error('Login failed. Please try again.', { id: loginLoadingToastId });
 		}
@@ -75,14 +77,20 @@
 		invalidateAll: 'force',
 		applyAction: true,
 		resetForm: false,
-
 		onSubmit({ cancel }) {
 			registerLoadingToastId = toast.loading('Registering...');
 		},
-
 		onResult: async ({ result }) => {
 			if (result.type === 'failure') {
-				toast.error('Registration validation failed', { id: registerLoadingToastId });
+				// Dismiss loading toast first
+				toast.dismiss(registerLoadingToastId);
+				// Only show specific field errors, not a general message
+				if (result.data?.form?.errors) {
+					showErrors(result.data.form.errors);
+				} else {
+					// Fallback if no specific errors
+					toast.error('Registration validation failed');
+				}
 			} else if (result.type === 'success') {
 				toast.success('Registration successful', { id: registerLoadingToastId });
 				// Switch to login after successful registration
@@ -94,16 +102,12 @@
 				toast.success('Registration successful', { id: registerLoadingToastId });
 			}
 		},
-
 		onUpdated({ form }) {
 			if (form.message) {
 				toast.success(form.message);
 			}
-			if (form.errors) {
-				showErrors(form.errors);
-			}
+			// Removed error handling from here to prevent duplicates
 		},
-
 		onError({ result }) {
 			toast.error('Registration failed. Please try again.', { id: registerLoadingToastId });
 		}
