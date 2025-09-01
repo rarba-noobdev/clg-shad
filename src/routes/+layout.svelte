@@ -24,8 +24,8 @@
 		const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
 			console.log('Auth state changed');
 			if (oauthCheck) {
-				toast.success('Logged In Sucessfully');
 				page.url.searchParams.delete('oauth');
+				toast.success('Logged In Sucessfully');
 			}
 			userState.updateState({
 				session: newSession,
