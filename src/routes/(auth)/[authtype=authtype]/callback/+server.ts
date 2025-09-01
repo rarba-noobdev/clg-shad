@@ -1,5 +1,4 @@
 import { redirect } from '@sveltejs/kit';
-import { toast } from 'svelte-sonner';
 
 export const GET = async (event) => {
 	const {

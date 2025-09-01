@@ -65,6 +65,8 @@ export const actions: Actions = {
 		}
 
 		try {
+			console.log(url.origin);
+
 			const { data, error } = await supabase.auth.signInWithOAuth({
 				provider,
 				options: {
