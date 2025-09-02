@@ -6,111 +6,120 @@
 	import SuperDebug, { superForm } from 'sveltekit-superforms';
 	import type { PageData } from './$types';
 	import { toast } from 'svelte-sonner';
-	import { invalidateAll } from '$app/navigation';
+	import { invalidate, invalidateAll } from '$app/navigation';
+	import { setUserState } from '../../../lib/user_state/user_state.svelte';
 
 	let { data }: { data: PageData } = $props();
-	let authType = $state('login');
+	let authType = $state<'login' | 'register'>('login');
 
-	function showErrors(errors: Record<string, string[] | undefined>) {
-		for (const key of Object.keys(errors)) {
-			const messages = errors[key];
-			if (messages) {
-				for (const msg of messages) {
-					toast.error(msg);
-				}
-			}
-		}
-	}
+	// Initialize user state
+	const userState = setUserState({
+		session: data.session,
+		supabase: data.supabase,
+		user: data.user
+	});
 
-	let loginLoadingToastId: string | number | undefined;
-	let {
-		form: loginForm,
-		enhance: loginEnhance,
-		submitting: loginSubmitting
-	} = superForm(data.loginForm, {
-		// Force full page reload
-		invalidateAll: 'force',
-		applyAction: true,
-		onSubmit({ cancel }) {
-			loginLoadingToastId = toast.loading('Logging In...');
+	// Show form errors
+	const showErrors = (errors: Record<string, string[] | undefined>) => {
+		Object.values(errors).forEach((messages) => {
+			messages?.forEach((msg) => toast.error(msg));
+		});
+	};
+
+	// Create promise resolver for toast.promise
+	let resolveLogin: ((value: string) => void) | null = null;
+	let rejectLogin: ((reason: Error) => void) | null = null;
+	let resolveRegister: ((value: string) => void) | null = null;
+	let rejectRegister: ((reason: Error) => void) | null = null;
+
+	// Login form
+	const { form: loginForm, enhance: loginEnhance } = superForm(data.loginForm, {
+		onSubmit: () => {
+			// Create and start promise toast
+			const promise = new Promise<string>((resolve, reject) => {
+				resolveLogin = resolve;
+				rejectLogin = reject;
+			});
+
+			toast.promise(promise, {
+				loading: 'Logging in...',
+				success: (data) => data,
+				error: 'Login failed. Please try again.'
+			});
 		},
 		onResult: async ({ result }) => {
-			if (result.type === 'failure') {
-				// Dismiss loading toast first
-				toast.dismiss(loginLoadingToastId);
-				// Only show specific field errors, not a general message
-				if (result.data?.form?.errors) {
-					showErrors(result.data.form.errors);
-				} else {
-					// Fallback if no specific errors
-					toast.error('Login validation failed');
-				}
-			} else if (result.type === 'success') {
-				toast.success('Login successful', { id: loginLoadingToastId });
-				// Force full page reload
+			if (result.type === 'failure' && result.data?.form?.errors) {
+				showErrors(result.data.form.errors);
+				rejectLogin?.(new Error('Validation failed'));
+			} else if (result.type === 'success' || result.type === 'redirect') {
+				resolveLogin?.('Login successful');
 				await invalidateAll();
-				// Or use window.location.reload() for a hard refresh
-				window.location.reload();
-			} else if (result.type === 'redirect') {
-				// Let SvelteKit handle the redirect, which will do a full navigation
-				toast.success('Login successful', { id: loginLoadingToastId });
+			} else {
+				rejectLogin?.(new Error('Login failed'));
 			}
+			// Reset resolvers
+			resolveLogin = null;
+			rejectLogin = null;
 		},
-		onUpdated({ form }) {
-			if (form.message) {
-				toast.success(form.message);
-			}
-			// Removed error handling from here to prevent duplicates
-		},
-		onError({ result }) {
-			toast.error('Login failed. Please try again.', { id: loginLoadingToastId });
+		onError: () => {
+			rejectLogin?.(new Error('Login failed'));
+			resolveLogin = null;
+			rejectLogin = null;
 		}
 	});
 
-	let registerLoadingToastId: string | number | undefined;
-	let {
-		form: registerForm,
-		enhance: registerEnhance,
-		submitting: registerSubmitting
-	} = superForm(data.registerForm, {
-		// Force full page reload
-		invalidateAll: 'force',
-		applyAction: true,
-		resetForm: false,
-		onSubmit({ cancel }) {
-			registerLoadingToastId = toast.loading('Registering...');
+	// Register form
+	const { form: registerForm, enhance: registerEnhance } = superForm(data.registerForm, {
+		onSubmit: () => {
+			// Create and start promise toast
+			const promise = new Promise<string>((resolve, reject) => {
+				resolveRegister = resolve;
+				rejectRegister = reject;
+			});
+
+			toast.promise(promise, {
+				loading: 'Registering...',
+				success: (data) => data,
+				error: 'Registration failed. Please try again.'
+			});
 		},
 		onResult: async ({ result }) => {
-			if (result.type === 'failure') {
-				// Dismiss loading toast first
-				toast.dismiss(registerLoadingToastId);
-				// Only show specific field errors, not a general message
-				if (result.data?.form?.errors) {
-					showErrors(result.data.form.errors);
-				} else {
-					// Fallback if no specific errors
-					toast.error('Registration validation failed');
-				}
-			} else if (result.type === 'success') {
-				toast.success('Registration successful', { id: registerLoadingToastId });
-				// Switch to login after successful registration
-				authType = 'login';
-				window.location.reload();
+			if (result.type === 'failure' && result.data?.form?.errors) {
+				showErrors(result.data.form.errors);
+				rejectRegister?.(new Error('Validation failed'));
+			} else if (result.type === 'success' || result.type === 'redirect') {
+				resolveRegister?.('Registration successful');
+				authType = 'login'; // Switch to login after successful registration
 				await invalidateAll();
-			} else if (result.type === 'redirect') {
-				// Let SvelteKit handle the redirect
-				toast.success('Registration successful', { id: registerLoadingToastId });
+			} else {
+				rejectRegister?.(new Error('Registration failed'));
 			}
+			// Reset resolvers
+			resolveRegister = null;
+			rejectRegister = null;
 		},
-		onUpdated({ form }) {
-			if (form.message) {
-				toast.success(form.message);
-			}
-			// Removed error handling from here to prevent duplicates
-		},
-		onError({ result }) {
-			toast.error('Registration failed. Please try again.', { id: registerLoadingToastId });
+		onError: () => {
+			rejectRegister?.(new Error('Registration failed'));
+			resolveRegister = null;
+			rejectRegister = null;
 		}
+	});
+
+	// Auth state management
+	$effect(() => {
+		const { data: authData } = data.supabase.auth.onAuthStateChange((event, newSession) => {
+			userState.updateState({
+				session: newSession,
+				supabase: data.supabase,
+				user: newSession?.user || null
+			});
+
+			if (newSession?.expires_at !== data.session?.expires_at) {
+				invalidate('supabase:auth');
+			}
+		});
+
+		return () => authData.subscription.unsubscribe();
 	});
 </script>
 
@@ -199,7 +208,7 @@
 					<Button type="submit" class="w-full">Login</Button>
 				</form>
 
-				<!-- Fixed Google OAuth form -->
+				<!-- Google OAuth form -->
 				<form method="POST" class="mt-4">
 					<input type="hidden" name="provider" value="google" />
 					<Button
