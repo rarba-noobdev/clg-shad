@@ -5,7 +5,7 @@
 	import { invalidate, goto } from '$app/navigation';
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
 	import { setUserState } from '$lib/user_state/user_state.svelte';
-	import '@bprogress/core/css';
+	// import '@bprogress/core/css';
 	import { toast } from 'svelte-sonner';
 	import { page } from '$app/state';
 	let { data, children } = $props();
