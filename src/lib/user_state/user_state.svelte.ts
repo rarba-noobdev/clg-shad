@@ -106,12 +106,11 @@ export class UserState {
 	 */
 	async register(event_id: string): Promise<Registration> {
 		if (!this.user || !this.session) {
-			toast.error("Please log in to register for an event'");
+			toast.error('Please log in to register for an event');
 			throw new Error('Please log in to register for an event');
 		}
 		if (!this.supabase) {
 			toast.error('Supabase client is not available');
-
 			throw new Error('Supabase client is not available');
 		}
 
@@ -121,7 +120,12 @@ export class UserState {
 			status: 'pending' // Default status; adjust as needed
 		};
 
-		const { data, error } = await this.supabase.from('registrations').insert({});
+		// Pass the newRegistration object to the insert method
+		const { data, error } = await this.supabase
+			.from('registrations')
+			.insert(newRegistration)
+			.select()
+			.single();
 
 		if (error) {
 			console.error('Registration error:', error);

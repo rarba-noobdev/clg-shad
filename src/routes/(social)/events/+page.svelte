@@ -192,6 +192,7 @@
 								<Button
 									disabled={event.is_sold_out || !user.user}
 									onclick={() => {
+										console.log('Registering for event ID:', event.id); // Debugging
 										user.register(event.id);
 									}}
 								>
