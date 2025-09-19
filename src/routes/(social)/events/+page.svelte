@@ -1,7 +1,7 @@
 <script lang="ts">
-	import EventCard from '../../../lib/components/ui/eventCard/EventCard.svelte';
+	import EventCard from '$lib/components/ui/eventCard/EventCard.svelte';
 	import type { PageProps } from './$types';
-
+	import { getUserState } from '$lib/user_state/user_state.svelte';
 	let { data }: PageProps = $props();
 	let { events } = data;
 
@@ -9,7 +9,10 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Calendar, MapPin, Users, Clock } from 'lucide-svelte';
+	let user = $derived(getUserState());
 </script>
+
+<Button onclick={() => user.register}></Button>
 
 <main class="min-h-screen bg-background">
 	<!-- Header -->
@@ -186,8 +189,13 @@
 								<Dialog.Close>
 									<Button variant="outline">Close</Button>
 								</Dialog.Close>
-								<Button disabled={event.is_sold_out ?? false}>
-									{event.is_sold_out ? 'Sold out' : 'Register'}
+								<Button
+									disabled={event.is_sold_out || !user.user}
+									onclick={() => {
+										user.register(event.id);
+									}}
+								>
+									{event.is_sold_out ? 'Sold Out' : 'Register'}
 								</Button>
 							</Dialog.Footer>
 						</Dialog.Content>

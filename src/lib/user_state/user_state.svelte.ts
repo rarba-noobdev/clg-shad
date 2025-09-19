@@ -30,6 +30,18 @@
 
 import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
 import { getContext, setContext } from 'svelte';
+import type { Tables } from 'databasetypes';
+import { toast } from 'svelte-sonner';
+
+// Define the registration type based on the 'registrations' table
+type Registration = Tables<'registrations'>;
+
+// Define the insert type, excluding auto-generated fields
+type RegistrationInsert = {
+	event_id: string;
+	status?: 'pending' | 'confirmed' | 'cancelled' | null;
+	user_id: string;
+};
 
 /**
  * Interface representing the user state data structure
@@ -55,7 +67,6 @@ export class UserState {
 	private _user = $state<User | null>(null);
 	/** @private Supabase client instance */
 	private _supabase = $state<SupabaseClient | null>(null);
-	/** @private Cached events data */
 
 	/**
 	 * Creates a new UserState instance
@@ -85,6 +96,43 @@ export class UserState {
 
 	get supabase(): SupabaseClient | null {
 		return this._supabase;
+	}
+
+	/**
+	 * Registers a user for an event
+	 * @param event_id The ID of the event to register for
+	 * @returns The inserted registration data or throws an error
+	 * @throws Error if user is not logged in, Supabase client is unavailable, or insertion fails
+	 */
+	async register(event_id: string): Promise<Registration> {
+		if (!this.user || !this.session) {
+			toast.error("Please log in to register for an event'");
+			throw new Error('Please log in to register for an event');
+		}
+		if (!this.supabase) {
+			toast.error('Supabase client is not available');
+
+			throw new Error('Supabase client is not available');
+		}
+
+		const newRegistration: RegistrationInsert = {
+			event_id,
+			user_id: this.user.id,
+			status: 'pending' // Default status; adjust as needed
+		};
+
+		const { data, error } = await this.supabase.from('registrations').insert({});
+
+		if (error) {
+			console.error('Registration error:', error);
+			throw new Error(`Failed to register: ${error.message}`);
+		}
+
+		if (!data) {
+			throw new Error('No data returned from registration');
+		}
+
+		return data;
 	}
 
 	async logOut() {
