@@ -14,6 +14,7 @@
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import MoonIcon from '@lucide/svelte/icons/moon';
 	import { toggleMode } from 'mode-watcher';
+	import { getUserState } from '../user_state/user_state.svelte';
 
 	const navItems = [
 		{ href: '/', label: 'Home' },
@@ -39,6 +40,9 @@
 		// TODO: integrate with search API
 		closeSearch();
 	}
+
+	let userState = getUserState();
+	let { user } = $derived(userState);
 </script>
 
 <header
@@ -160,10 +164,16 @@
 				</DialogContent>
 			</Dialog>
 
-			<!-- Desktop CTA -->
-			<Button href="/auth" variant="default" size="sm" class="hidden md:inline-flex">
-				Get Started
-			</Button>
+			<!-- User Greeting or CTA -->
+			{#if user?.email}
+				<p class="hidden text-sm text-muted-foreground md:block">
+					Welcome, {user.email.split('@')[0]}!
+				</p>
+			{:else}
+				<Button href="/auth" variant="default" size="sm" class="hidden md:inline-flex">
+					Get Started
+				</Button>
+			{/if}
 
 			<!-- Theme Toggle -->
 			<Button

@@ -9,10 +9,9 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Calendar, MapPin, Users, Clock } from 'lucide-svelte';
-	let user = $derived(getUserState());
+	let userState = getUserState();
+	let { user, register } = $derived(userState);
 </script>
-
-<Button onclick={() => user.register}></Button>
 
 <main class="min-h-screen bg-background">
 	<!-- Header -->
@@ -190,10 +189,9 @@
 									<Button variant="outline">Close</Button>
 								</Dialog.Close>
 								<Button
-									disabled={event.is_sold_out || !user.user}
+									disabled={event.is_sold_out || !user}
 									onclick={() => {
-										console.log('Registering for event ID:', event.id); // Debugging
-										user.register(event.id);
+										userState.register(event.id);
 									}}
 								>
 									{event.is_sold_out ? 'Sold Out' : 'Register'}

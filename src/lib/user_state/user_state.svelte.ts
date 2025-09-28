@@ -1,8 +1,31 @@
 /**
  * User State Management Module
- * ----------------------------
+ * --------------------------
  * Provides centralized state management for user authentication and session handling
  * using Svelte's context API and Supabase authentication.
+ *
+ * Features:
+ * - Reactive state management for user session
+ * - Supabase client integration
+ * - Authentication state persistence
+ * - Type-safe database interactions
+ * - Real-time state updates
+ *
+ * Usage:
+ * ```typescript
+ * // In a component
+ * import { getUserState } from '$lib/userstate.svelte';
+ *
+ * let { user, session } = $derived(getUserState());
+ * ```
+ *
+ * State Structure:
+ * - session: Current user session
+ * - user: Current user data
+ * - supabase: Supabase client instance
+ * - events: Cached events data
+ *
+ * @module userstate
  */
 
 import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
@@ -22,25 +45,41 @@ type RegistrationInsert = {
 
 /**
  * Interface representing the user state data structure
+ * @interface userStateObject
  */
 interface userStateObject {
+	/** Current user session or null if not authenticated */
 	session: Session | null;
+	/** Current user data or null if not authenticated */
 	user: User | null;
+	/** Initialized Supabase client instance */
 	supabase: SupabaseClient | null;
 }
 
 /**
  * Class managing global user state and authentication
+ * @class UserState
  */
 export class UserState {
+	/** @private Current user session state */
 	private _session = $state<Session | null>(null);
+	/** @private Current user data state */
 	private _user = $state<User | null>(null);
+	/** @private Supabase client instance */
 	private _supabase = $state<SupabaseClient | null>(null);
 
+	/**
+	 * Creates a new UserState instance
+	 * @param userState Initial user state object
+	 */
 	constructor(userState: userStateObject) {
 		this.updateState(userState);
 	}
 
+	/**
+	 * Updates the current user state
+	 * @param userState New user state object
+	 */
 	updateState(userState: userStateObject) {
 		this._session = userState.session;
 		this._user = userState.user;
@@ -61,41 +100,43 @@ export class UserState {
 
 	/**
 	 * Registers a user for an event
+	 * @param eventId The ID of the event to register for
 	 */
-	async register(event_id: string): Promise<Registration> {
-		if (!this.user || !this.session) {
-			toast.error('Please log in to register for an event');
-			throw new Error('Please log in to register for an event');
-		}
+	async register(eventId: string) {
 		if (!this.supabase) {
-			toast.error('Supabase client is not available');
-			throw new Error('Supabase client is not available');
+			toast.error('Supabase client is not initialized.');
+			return;
 		}
 
-		const newRegistration: RegistrationInsert = {
-			event_id,
-			user_id: this.user.id,
-			status: 'pending'
-		};
-
-		// ✅ Use array for insert to avoid errors
-		const { data, error } = await this.supabase
-			.from('registrations')
-			.insert([newRegistration])
-			.select();
-
-		if (error) {
-			console.error('Registration error (full):', error);
-			toast.error(`Failed to register: ${error.message}`);
-			throw new Error(`Failed to register: ${error.message}`);
+		// ✅ Always fetch the latest user from Supabase Auth
+		const {
+			data: { user },
+			error: userError
+		} = await this.supabase.auth.getUser();
+		if (userError || !user) {
+			toast.error('Please log in to register.');
+			return;
 		}
 
-		if (!data || data.length === 0) {
-			throw new Error('No data returned from registration');
-		}
+		try {
+			const registration: RegistrationInsert = {
+				user_id: user.id, // ✅ always use Supabase auth user.id
+				event_id: eventId,
+				status: 'pending'
+			};
 
-		// ✅ Supabase returns an array, grab the first row
-		return data[0] as Registration;
+			const { error } = await this.supabase.from('registrations').insert(registration);
+
+			if (error) {
+				toast.error('Failed to register: ' + error.message);
+				return;
+			}
+
+			toast.success('Successfully registered for the event!');
+		} catch (err) {
+			toast.error('An error occurred during registration.');
+			console.error('Registration error:', err);
+		}
 	}
 
 	async logOut() {
